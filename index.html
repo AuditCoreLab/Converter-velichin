@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AuditCoreLab | Professional Converter</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const translations = {
+            ru: { flow: "Расход (Q)", press: "Давление (P)", temp: "Температура (T)", size: "Размер", length: "Длина", weight: "Вес", screen1: "Воздух", screen2: "Механика", conditions: "Условия" },
+            en: { flow: "Flow (Q)", press: "Pressure (P)", temp: "Temp (T)", size: "Size", length: "Length", weight: "Weight", screen1: "Air", screen2: "Mechanical", conditions: "Conditions" },
+            de: { flow: "Durchfluss", press: "Druck", temp: "Temp", size: "Größe", length: "Länge", weight: "Gewicht", screen1: "Luft", screen2: "Mechanik", conditions: "Bedingungen" },
+            fr: { flow: "Débit", press: "Pression", temp: "Temp", size: "Taille", length: "Longueur", weight: "Poids", screen1: "Air", screen2: "Mécanique", conditions: "Conditions" },
+            it: { flow: "Portata", press: "Pressione", temp: "Temp", size: "Dimensione", length: "Lunghezza", weight: "Peso", screen1: "Aria", screen2: "Meccanica", conditions: "Condizioni" },
+            es: { flow: "Caudal", press: "Presión", temp: "Temp", size: "Tamaño", length: "Longitud", weight: "Peso", screen1: "Aire", screen2: "Mecánica", conditions: "Condiciones" }
+        };
+
+        function CalcCard({ title, color, children }) {
+            return (
+                <div className={`bg-slate-800 rounded-lg border-t-4 ${color} p-4 shadow-lg flex flex-col gap-4 transition-all hover:shadow-2xl`}>
+                    <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400">{title}</h3>
+                    {children}
+                </div>
+            );
+        }
+
+        function InputGroup({ label, value, onChange, unit, highlight = false }) {
+            const handleChange = (e) => {
+                let val = e.target.value;
+                if (val.includes('.')) {
+                    const [int, dec] = val.split('.');
+                    val = int.slice(0, 6) + '.' + (dec ? dec.slice(0, 3) : '');
+                } else {
+                    val = val.slice(0, 6);
+                }
+                onChange(val);
+            };
+
+            return (
+                <div className="flex flex-col gap-1">
+                    <div className="flex justify-between text-[10px] font-mono text-slate-500 uppercase">
+                        <span>{label}</span>
+                        <span className={highlight ? "text-orange-500 font-bold" : ""}>{unit}</span>
+                    </div>
+                    <input 
+                        type="number" 
+                        value={value} 
+                        onChange={handleChange}
+                        className="bg-slate-900 border border-slate-700 rounded p-2 mono text-lg focus:border-orange-500 outline-none transition-colors text-white"
+                        placeholder="0.000"
+                    />
+                </div>
+            );
+        }
+
+        function App() {
+            // Инициализация из LocalStorage
+            const savedState = JSON.parse(localStorage.getItem('auditCoreState')) || {
+                lang: 'ru', screen: 1, q: "", p: "", t: "", size: "", len: "", w: "", isNormal: false
+            };
+
+            const [lang, setLang] = useState(savedState.lang);
+            const [screen, setScreen] = useState(savedState.screen);
+            const [vals, setVals] = useState(savedState);
+            const [isNormal, setIsNormal] = useState(savedState.isNormal);
+
+            useEffect(() => {
+                const stateToSave = { ...vals, lang, screen, isNormal };
+                localStorage.setItem('auditCoreState', JSON.stringify(stateToSave));
+            }, [vals, lang, screen, isNormal]);
+
+            const t = translations[lang];
+
+            return (
+                <div className="max-w-6xl mx-auto p-4 md:p-8">
+                    {/* Header */}
+                    <div className="flex flex-wrap justify-between items-center mb-8 gap-4 border-b border-slate-800 pb-6">
+                        <div>
+                            <h1 className="text-3xl font-black text-orange-500 tracking-tighter italic">AUDITCORE LAB</h1>
+                            <p className="text-[10px] text-slate-500 font-mono tracking-[0.2em]">ENGINEERING INTELLIGENCE</p>
+                        </div>
+                        
+                        <div className="flex flex-wrap gap-1">
+                            {Object.keys(translations).map(l => (
+                                <button key={l} onClick={() => setLang(l)} className={`px-3 py-1 text-[10px] font-bold rounded transition-all ${lang === l ? 'bg-orange-600 text-white' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}>{l.toUpperCase()}</button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Navigation & Normal Conditions Toggle */}
+                    <div className="flex flex-wrap justify-between items-center mb-8 gap-4">
+                        <div className="flex bg-slate-800 p-1 rounded-lg">
+                            <button onClick={() => setScreen(1)} className={`px-6 py-2 rounded-md text-sm font-semibold transition-all ${screen === 1 ? 'bg-slate-700 text-orange-400 shadow-inner' : 'text-slate-500'}`}>{t.screen1}</button>
+                            <button onClick={() => setScreen(2)} className={`px-6 py-2 rounded-md text-sm font-semibold transition-all ${screen === 2 ? 'bg-slate-700 text-orange-400 shadow-inner' : 'text-slate-500'}`}>{t.screen2}</button>
+                        </div>
+
+                        {screen === 1 && (
+                            <div className="flex items-center gap-3 bg-slate-800 px-4 py-2 rounded-lg border border-slate-700">
+                                <span className="text-xs font-bold text-slate-400 uppercase">{t.conditions}:</span>
+                                <button onClick={() => setIsNormal(!isNormal)} className={`text-[10px] px-2 py-1 rounded font-mono ${isNormal ? 'bg-blue-600 text-white' : 'bg-slate-700 text-slate-400'}`}>
+                                    {isNormal ? 'NORMAL (Nm³/min, Scfm)' : 'ACTUAL (m³/min, Cfm)'}
+                                </button>
+                            </div>
+                        )}
+                    </div>
+
+                    {screen === 1 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-in fade-in duration-500">
+                            <CalcCard title={t.flow} color="border-cyan-500">
+                                <InputGroup label={isNormal ? "Nm³/min" : "m³/min"} value={vals.q} onChange={(v) => setVals({...vals, q: v})} unit="M3/M" highlight />
+                                <InputGroup label="l/sec" value={vals.q ? (vals.q * 16.6667).toFixed(3) : ""} onChange={(v) => setVals({...vals, q: v / 16.6667})} unit="L/S" />
+                                <InputGroup label="m³/hour" value={vals.q ? (vals.q * 60).toFixed(3) : ""} onChange={(v) => setVals({...vals, q: v / 60})} unit="M3/H" />
+                                <div className="border-t border-slate-700 my-2"></div>
+                                <InputGroup label={isNormal ? "Scfm" : "Cfm"} value={vals.q ? (vals.q * 35.3147).toFixed(3) : ""} onChange={(v) => setVals({...vals, q: v / 35.3147})} unit="US" highlight />
+                            </CalcCard>
+
+                            <CalcCard title={t.press} color="border-indigo-500">
+                                <InputGroup label="Bar" value={vals.p} onChange={(v) => setVals({...vals, p: v})} unit="BAR" highlight />
+                                <InputGroup label="kPa" value={vals.p ? (vals.p * 100).toFixed(3) : ""} onChange={(v) => setVals({...vals, p: v / 100})} unit="KPA" />
+                                <InputGroup label="MPa" value={vals.p ? (vals.p / 10).toFixed(3) : ""} onChange={(v) => setVals({...vals, p: v * 10})} unit="MPA" />
+                                <div className="border-t border-slate-700 my-2"></div>
+                                <InputGroup label="PSI (lb/in²)" value={vals.p ? (vals.p * 14.5038).toFixed(3) : ""} onChange={(v) => setVals({...vals, p: v / 14.5038})} unit="US" highlight />
+                            </CalcCard>
+
+                            <CalcCard title={t.temp} color="border-orange-600">
+                                <InputGroup label="Celsius (°C)" value={vals.t} onChange={(v) => setVals({...vals, t: v})} unit="°C" highlight />
+                                <div className="flex justify-center py-4">
+                                    <div className="h-20 w-1 bg-gradient-to-b from-orange-600 to-blue-500 rounded-full"></div>
+                                </div>
+                                <InputGroup label="Fahrenheit (°F)" value={vals.t ? (vals.t * 9/5 + 32).toFixed(3) : ""} onChange={(v) => setVals({...vals, t: (v - 32) * 5/9})} unit="°F" highlight />
+                            </CalcCard>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-in slide-in-from-right duration-500">
+                            <CalcCard title={t.size} color="border-emerald-500">
+                                <InputGroup label="mm" value={vals.size} onChange={(v) => setVals({...vals, size: v})} unit="Metric" />
+                                <InputGroup label="inch" value={vals.size ? (vals.size / 25.4).toFixed(3) : ""} onChange={(v) => setVals({...vals, size: v * 25.4})} unit="Imperial" />
+                            </CalcCard>
+
+                            <CalcCard title={t.length} color="border-blue-500">
+                                <InputGroup label="Meters (m)" value={vals.len} onChange={(v) => setVals({...vals, len: v})} unit="Metric" />
+                                <InputGroup label="Feet (ft)" value={vals.len ? (vals.len * 3.28084).toFixed(3) : ""} onChange={(v) => setVals({...vals, len: v / 3.28084})} unit="Imperial" />
+                            </CalcCard>
+
+                            <CalcCard title={t.weight} color="border-purple-500">
+                                <InputGroup label="Kilograms (kg)" value={vals.w} onChange={(v) => setVals({...vals, w: v})} unit="Metric" />
+                                <InputGroup label="Pounds (lb)" value={vals.w ? (vals.w * 2.20462).toFixed(3) : ""} onChange={(v) => setVals({...vals, w: v / 2.20462})} unit="Imperial" />
+                            </CalcCard>
+                        </div>
+                    )}
+
+                    <footer className="mt-12 text-center text-[9px] font-mono text-slate-600 uppercase tracking-widest">
+                        &copy; 2024 AuditCoreLab // Professional Engineering Tools // Built in Web Mode
+                    </footer>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
