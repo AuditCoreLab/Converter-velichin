@@ -54,8 +54,11 @@
             return (
                 <div className="flex flex-col gap-1">
                     <div className="flex justify-between text-[10px] font-mono text-slate-500 uppercase">
-                        <span>{label}</span>
-                        <span className={highlight ? "text-orange-500 font-bold" : ""}>{unit}</span>
+                        <span className="font-bold">{label}</span>
+                        {/* ТУТ ИЗМЕНЕНИЯ: увеличили шрифт до text-xs и сделали цвет white */}
+                        <span className={`text-xs ${highlight ? "text-orange-500 font-black" : "text-white font-bold"}`}>
+                            {unit}
+                        </span>
                     </div>
                     <input 
                         type="number" 
@@ -101,19 +104,17 @@
                         </div>
                     </div>
 
-                    {/* Navigation & Normal Conditions Toggle - SWAPPED ORDER */}
+                    {/* Navigation & Normal Conditions Toggle */}
                     <div className="flex flex-wrap justify-between items-center mb-8 gap-4">
-                        {/* LEFT SIDE: Conditions (Now First) */}
                         {screen === 1 ? (
                             <div className="flex items-center gap-3 bg-slate-800 px-4 py-2 rounded-lg border border-slate-700">
                                 <span className="text-xs font-bold text-slate-400 uppercase">{t.conditions}:</span>
-                                <button onClick={() => setIsNormal(!isNormal)} className={`text-[10px] px-2 py-1 rounded font-mono ${isNormal ? 'bg-blue-600 text-white' : 'bg-slate-700 text-slate-400'}`}>
+                                <button onClick={() => setIsNormal(!isNormal)} className={`text-[10px] px-2 py-1 rounded font-mono ${isNormal ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/20' : 'bg-slate-700 text-slate-400'}`}>
                                     {isNormal ? 'NORMAL (Nm³/min, Scfm)' : 'ACTUAL (m³/min, Cfm)'}
                                 </button>
                             </div>
-                        ) : <div className="hidden md:block"></div> /* Spacer for symmetry */}
+                        ) : <div className="hidden md:block"></div>}
 
-                        {/* RIGHT SIDE: Screen Toggle (Now Second) */}
                         <div className="flex bg-slate-800 p-1 rounded-lg">
                             <button onClick={() => setScreen(1)} className={`px-6 py-2 rounded-md text-sm font-semibold transition-all ${screen === 1 ? 'bg-slate-700 text-orange-400 shadow-inner' : 'text-slate-500'}`}>{t.screen1}</button>
                             <button onClick={() => setScreen(2)} className={`px-6 py-2 rounded-md text-sm font-semibold transition-all ${screen === 2 ? 'bg-slate-700 text-orange-400 shadow-inner' : 'text-slate-500'}`}>{t.screen2}</button>
@@ -149,18 +150,18 @@
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-in slide-in-from-right duration-500">
                             <CalcCard title={t.size} color="border-emerald-500">
-                                <InputGroup label="mm" value={vals.size} onChange={(v) => setVals({...vals, size: v})} unit="Metric" />
-                                <InputGroup label="inch" value={vals.size ? (vals.size / 25.4).toFixed(3) : ""} onChange={(v) => setVals({...vals, size: v * 25.4})} unit="Imperial" />
+                                <InputGroup label="mm" value={vals.size} onChange={(v) => setVals({...vals, size: v})} unit="METRIC" />
+                                <InputGroup label="inch" value={vals.size ? (vals.size / 25.4).toFixed(3) : ""} onChange={(v) => setVals({...vals, size: v * 25.4})} unit="IMPERIAL" />
                             </CalcCard>
 
                             <CalcCard title={t.length} color="border-blue-500">
-                                <InputGroup label="Meters (m)" value={vals.len} onChange={(v) => setVals({...vals, len: v})} unit="Metric" />
-                                <InputGroup label="Feet (ft)" value={vals.len ? (vals.len * 3.28084).toFixed(3) : ""} onChange={(v) => setVals({...vals, len: v / 3.28084})} unit="Imperial" />
+                                <InputGroup label="Meters (m)" value={vals.len} onChange={(v) => setVals({...vals, len: v})} unit="METRIC" />
+                                <InputGroup label="Feet (ft)" value={vals.len ? (vals.len * 3.28084).toFixed(3) : ""} onChange={(v) => setVals({...vals, len: v / 3.28084})} unit="IMPERIAL" />
                             </CalcCard>
 
                             <CalcCard title={t.weight} color="border-purple-500">
-                                <InputGroup label="Kilograms (kg)" value={vals.w} onChange={(v) => setVals({...vals, w: v})} unit="Metric" />
-                                <InputGroup label="Pounds (lb)" value={vals.w ? (vals.w * 2.20462).toFixed(3) : ""} onChange={(v) => setVals({...vals, w: v / 2.20462})} unit="Imperial" />
+                                <InputGroup label="Kilograms (kg)" value={vals.w} onChange={(v) => setVals({...vals, w: v})} unit="METRIC" />
+                                <InputGroup label="Pounds (lb)" value={vals.w ? (vals.w * 2.20462).toFixed(3) : ""} onChange={(v) => setVals({...vals, w: v / 2.20462})} unit="IMPERIAL" />
                             </CalcCard>
                         </div>
                     )}
